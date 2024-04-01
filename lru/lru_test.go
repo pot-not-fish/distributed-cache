@@ -13,7 +13,7 @@ func (s str) Len() int {
 }
 
 func TestSum(t *testing.T) {
-	c := New(10, nil)
+	c := New(10)
 
 	// 54321
 	// edcba
@@ -39,4 +39,7 @@ func TestSum(t *testing.T) {
 	// fbed
 	c.Del()
 	assert.EqualValues(t, "d", c.ll.Back().Value.(*entry).value)
+
+	c.Set("2", str("a"))
+	assert.EqualValues(t, "a", c.ll.Front().Value.(*entry).value)
 }
