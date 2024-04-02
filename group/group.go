@@ -2,13 +2,16 @@ package group
 
 import (
 	"fmt"
+	"kv-cache/lru"
 	"kv-cache/mutex"
+	"kv-cache/singleflight"
 	"sync"
 )
 
 type Group struct {
 	name       string
 	mainCache  *mutex.Cache
+	load       *singleflight.Group
 	getterFunc GetterFunc
 }
 
@@ -19,14 +22,15 @@ var (
 	groups = make(map[string]*Group)
 )
 
-func NewGroup(name string, cacheBytes int64, getterFunc GetterFunc) (*Group, error) {
+func NewGroup(name string, cacheBytes int64, getterFunc GetterFunc, cache lru.CacheInterface) (*Group, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
 	g := &Group{
 		name:       name,
-		mainCache:  mutex.New(cacheBytes),
+		mainCache:  mutex.New(cacheBytes, cache),
 		getterFunc: getterFunc,
+		load:       &singleflight.Group{},
 	}
 	if _, ok := groups[name]; ok {
 		return nil, fmt.Errorf("repeat new group")
@@ -45,14 +49,20 @@ func GetGroup(name string) (*Group, error) {
 }
 
 func (g *Group) Get(key string) ([]byte, bool) {
-	val, ok := g.mainCache.Get(key)
-	if !ok {
+	value, err := g.load.Do(key, func(key string) ([]byte, error) {
+		val, ok := g.mainCache.Get(key)
+		if !ok {
+			return nil, fmt.Errorf("no such key")
+		}
+		return val, nil
+	})
+	if err != nil {
 		if g.getterFunc != nil {
 			return g.getterFunc(key)
 		}
 		return nil, false
 	}
-	return val, true
+	return value, true
 }
 
 func (g *Group) Set(key string, value []byte) {

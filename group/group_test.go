@@ -14,13 +14,13 @@ func TestGroup(t *testing.T) {
 	)
 	g1, err := NewGroup("cache_1", 6, func(key string) ([]byte, bool) {
 		return g2.Get(key)
-	})
+	}, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	g2, err = NewGroup("cache_2", 6, func(key string) ([]byte, bool) {
 		return g1.Get(key)
-	})
+	}, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
