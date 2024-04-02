@@ -36,3 +36,17 @@ func (m *Map) Set(nodes ...string) {
 	}
 	sort.Ints(m.nodes)
 }
+
+func (m *Map) Get(key string) (node string) {
+	if key == "" {
+		return node
+	}
+
+	hash := int(m.hash([]byte(key)))
+
+	i := sort.Search(len(m.nodes), func(i int) bool {
+		return m.nodes[i] >= hash
+	})
+
+	return m.hashMap[m.nodes[i%len(m.nodes)]]
+}
