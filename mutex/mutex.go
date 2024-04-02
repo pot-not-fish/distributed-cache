@@ -6,13 +6,17 @@ import (
 )
 
 type Cache struct {
-	mu  sync.Mutex
-	lru *lru.Cache
+	mu    sync.Mutex
+	cache lru.CacheInterface
 }
 
-func New(cacheBytes int64) *Cache {
+func New(cacheBytes int64, cache lru.CacheInterface) *Cache {
+	if cache == nil {
+		cache = &lru.Cache{}
+	}
+	cache.New(cacheBytes)
 	return &Cache{
-		lru: lru.New(cacheBytes),
+		cache: cache,
 	}
 }
 
@@ -34,15 +38,15 @@ func (c *Cache) Set(key string, value []byte) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.lru.Set(key, ByteView(value))
+	c.cache.Set(key, ByteView(value))
 }
 
 func (c *Cache) Get(key string) ([]byte, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if val, ok := c.lru.Get(key); ok {
-		return val.(ByteView), ok
+	if val, ok := c.cache.Get(key); ok {
+		return val, ok
 	}
 	return nil, false
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func TestMutex(t *testing.T) {
-	cache := New(6)
+	cache := New(6, nil)
 
 	// 3 2 1
 	// c b a
