@@ -1,7 +1,6 @@
 package mutex
 
 import (
-	"fmt"
 	"kv-cache/pkg/cache_algorithm"
 	"sync"
 )
@@ -42,8 +41,6 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	if val, ok := c.cache.Get(key); ok {
 		ret := make([]byte, len(val))
 		copy(ret, val)
-		fmt.Println(string(ret))
-		fmt.Println(string(val))
 		return ret, ok
 	}
 	return nil, false

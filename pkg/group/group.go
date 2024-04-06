@@ -49,9 +49,13 @@ func GetGroup(name string) (*Group, error) {
 	return nil, fmt.Errorf("no such group")
 }
 
+var count = 0
+
 func (g *Group) Get(key string) ([]byte, bool) {
 	value, err := g.load.Do(key, func(key string) ([]byte, error) {
 		val, ok := g.mainCache.Get(key)
+		count++
+		fmt.Printf("call=%d\n", count)
 		if !ok {
 			return nil, fmt.Errorf("no such key")
 		}
