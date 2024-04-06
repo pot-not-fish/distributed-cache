@@ -23,4 +23,14 @@ func TestConsist(t *testing.T) {
 	assert.EqualValues(t, m.Get("111"), "10")
 	assert.EqualValues(t, m.Get("221"), "30")
 	assert.EqualValues(t, m.Get("150"), "10")
+
+	nodes := m.GetAll()
+	nodesMap := make(map[string]int)
+	for i := range nodes {
+		nodesMap[nodes[i]] = 1
+	}
+	assert.EqualValues(t, nodesMap["10"], 1)
+	assert.EqualValues(t, nodesMap["20"], 1)
+	assert.EqualValues(t, nodesMap["30"], 1)
+	assert.EqualValues(t, len(nodesMap), 3)
 }

@@ -48,3 +48,16 @@ func (m *Map) Get(key string) (node string) {
 	})
 	return m.hashMap[m.nodes[i%len(m.nodes)]]
 }
+
+func (m *Map) GetAll() (node []string) {
+	nodes := make([]string, 0, len(m.nodes))
+	repeat := make(map[string]int)
+	for _, v := range m.nodes {
+		tmp := m.hashMap[v]
+		repeat[tmp] = 1
+	}
+	for k := range repeat {
+		nodes = append(nodes, k)
+	}
+	return nodes
+}

@@ -2,9 +2,9 @@ package group
 
 import (
 	"fmt"
-	"kv-cache/lru"
-	"kv-cache/mutex"
-	"kv-cache/singleflight"
+	"kv-cache/pkg/cache_algorithm"
+	"kv-cache/pkg/mutex"
+	"kv-cache/pkg/singleflight"
 	"sync"
 )
 
@@ -22,7 +22,7 @@ var (
 	groups = make(map[string]*Group)
 )
 
-func NewGroup(name string, cacheBytes int64, getterFunc GetterFunc, cache lru.CacheInterface) (*Group, error) {
+func NewGroup(name string, cacheBytes int64, getterFunc GetterFunc, cache cache_algorithm.CacheInterface) (*Group, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -35,6 +35,7 @@ func NewGroup(name string, cacheBytes int64, getterFunc GetterFunc, cache lru.Ca
 	if _, ok := groups[name]; ok {
 		return nil, fmt.Errorf("repeat new group")
 	}
+	groups[name] = g
 	return g, nil
 }
 
@@ -67,4 +68,20 @@ func (g *Group) Get(key string) ([]byte, bool) {
 
 func (g *Group) Set(key string, value []byte) {
 	g.mainCache.Set(key, value)
+}
+
+func (g *Group) Del(key string) error {
+	return g.mainCache.Del(key)
+}
+
+func (g *Group) GetAll() ([]string, [][]byte) {
+	return g.mainCache.GetAll()
+}
+
+func GetAllGroups() []string {
+	groups_string := make([]string, 0, len(groups))
+	for k := range groups {
+		groups_string = append(groups_string, k)
+	}
+	return groups_string
 }

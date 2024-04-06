@@ -1,4 +1,4 @@
-package lru
+package cache_algorithm
 
 import (
 	"testing"
@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSum(t *testing.T) {
-	var c Cache
+func TestLRU(t *testing.T) {
+	var c LRUCache
 	c.New(10)
 
 	// 54321
@@ -22,7 +22,7 @@ func TestSum(t *testing.T) {
 	// bedca
 	val, _ := c.Get("2")
 	assert.EqualValues(t, []byte("b"), val)
-	assert.EqualValues(t, "b", c.ll.Front().Value.(*entry).value)
+	assert.EqualValues(t, "b", c.ll.Front().Value.(*lruEntry).value)
 
 	// 62543
 	// fbedc
@@ -32,9 +32,14 @@ func TestSum(t *testing.T) {
 
 	// 6254
 	// fbed
-	c.Del()
-	assert.EqualValues(t, []byte("d"), c.ll.Back().Value.(*entry).value)
+	c.DelBack()
+	assert.EqualValues(t, []byte("d"), c.ll.Back().Value.(*lruEntry).value)
 
 	c.Set("2", []byte("a"))
-	assert.EqualValues(t, []byte("a"), c.ll.Front().Value.(*entry).value)
+	assert.EqualValues(t, []byte("a"), c.ll.Front().Value.(*lruEntry).value)
+
+	c.Del("2")
+	_, ok = c.cache["2"]
+	assert.EqualValues(t, false, ok)
+	assert.EqualValues(t, true, byte('b') != c.ll.Front().Value.(*lruEntry).value[0])
 }
